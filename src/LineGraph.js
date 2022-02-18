@@ -3,25 +3,19 @@ import { Line } from "react-chartjs-2";
 import numeral from "numeral";
 
 
-
-
 const casesTypeColors = {
   cases: {
     hex: "#CC1034",
-    
   },
   recovered: {
-    hex: "#66FF99",
-    
+    hex: "#66FF99",  
   },
   deaths: {
-    hex: "#660000",
-    
+    hex: "#660000", 
   },
 };
 
-
-
+// The option of line graph.
 const options = {
   legend: {
     display: false,
@@ -68,41 +62,27 @@ const options = {
 };
 
 
-
-
-
 const buildChartData = (data, casesType ) => {
   let chartData = [];
   let lastDataPoint;
   for (let date in data.cases) {
-
     if (lastDataPoint) {
       let newDataPoint = {
         x: date,
         y: data[casesType][date] - lastDataPoint,
       };
-    
       chartData.push(newDataPoint);
     }
-
-    lastDataPoint = data[casesType][date];
-   
-    
+    lastDataPoint = data[casesType][date];  
   }
-  
   return chartData;
 };
-
-
-
-
 
 
 function LineGraph({ casesType }) {
   const [data, setData] = useState({});
   
-
-
+  // get the data of the whole world covid19　cases which is last 120 days 
   useEffect(() => {
     const fetchData = async () => {
       await fetch("https://disease.sh/v3/covid-19/historical/all?lastdays=120")
@@ -112,16 +92,11 @@ function LineGraph({ casesType }) {
         .then((data) => {
           let chartData = buildChartData(data, casesType);
           setData(chartData);
-          console.log(chartData);
-          // buildChart(chartData);
+          console.log(chartData);        
         });
     };
-
     fetchData();
   }, [casesType]);
-
-
-
 
 
   return (
