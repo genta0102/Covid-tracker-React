@@ -14,7 +14,7 @@ import { sortData, prettyPrintStat } from "./util";
 import numeral from "numeral";
 import Map from "./Map";
 import "leaflet/dist/leaflet.css";
-
+import axios from "axios";
 
 
 function App() {
@@ -35,6 +35,23 @@ function App() {
         setCountryInfo(data);
       });
   }, []);
+
+  // Af10Zq.S6POuuxwgqh2pHQYHHk2b7zZmrVSf4W1
+
+  useEffect(() => {
+   
+    axios({
+      method : 'GET',
+      url    : 'https://api.travelperk.com/travelsafe/restrictions?destination=ES&origin=FR&destination_type=country_code&origin_type=country_code&date=2020-10-15',
+      headers: {
+        "Authorization":  "Af10Zq.S6POuuxwgqh2pHQYHHk2b7zZmrVSf4W1",
+        "Content-Type": "application/json",
+        data: {}
+      },
+  }).then(response => console.log('response body:', response.data));
+  }, []);
+
+  
 
   useEffect(() => {
     const getCountriesData = async () => {
