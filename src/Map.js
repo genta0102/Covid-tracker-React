@@ -1,9 +1,11 @@
 import React from "react";
+import "./style/Map.css";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import "./Map.css";
 import { showDataOnMap } from "./util";
 
 function Map({ countries, casesType, center, zoom }) {
+
+  // The function  where the event occurs when the Country is selected at form.
   function ChangeView({ center, zoom }) {
     const map = useMap();
     map.setView(center, zoom);

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import "./App.css";
+import "./style/App.css";
+import InfoBox from "./InfoBox";
+import LineGraph from "./LineGraph";
+import Table from "./Table";
+import Map from "./Map";
+import { sortData, prettyPrintStat } from "./util";
+import "leaflet/dist/leaflet.css";
 import {
   MenuItem,
   FormControl,
@@ -7,14 +13,7 @@ import {
   Card,
   CardContent,
 } from "@material-ui/core";
-import InfoBox from "./InfoBox";
-import LineGraph from "./LineGraph";
-import Table from "./Table";
-import { sortData, prettyPrintStat } from "./util";
-import numeral from "numeral";
-import Map from "./Map";
-import "leaflet/dist/leaflet.css";
-import axios from "axios";
+
 
 
 function App() {
@@ -28,88 +27,56 @@ function App() {
   const [casesType, setCasesType] = useState("cases");
   const [isLoading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetch("https://disease.sh/v3/covid-19/all")
-      .then((response) => response.json())
-      .then((data) => {
-        setCountryInfo(data);
-      });
-  }, []);
 
-  // Af10Zq.S6POuuxwgqh2pHQYHHk2b7zZmrVSf4W1
-
-  useEffect(() => {
-   
-    axios({
-      method : 'GET',
-      url    : 'https://api.travelperk.com/travelsafe/restrictions?destination=ES&origin=FR&destination_type=country_code&origin_type=country_code&date=2020-10-15',
-      headers: {
-        "Authorization":  "Af10Zq.S6POuuxwgqh2pHQYHHk2b7zZmrVSf4W1",
-        "Content-Type": "application/json",
-        data: {}
-      },
-  }).then(response => console.log('response body:', response.data));
-  }, []);
-
-  
-
-  useEffect(() => {
-    const getCountriesData = async () => {
-      await fetch("https://disease.sh/v3/covid-19/countries")
+  // get the whole world covid19 data 
+    useEffect(() => {
+      fetch("https://disease.sh/v3/covid-19/all")
         .then((response) => response.json())
         .then((data) => {
-          const countries = data.map((country) => ({
-            name: country.country,
-            value: country.countryInfo.iso2,
-          }));
-
-          const sortedData = sortData(data);
-          setTableData(sortedData);
-          setMapCountries(data);
-          setCountries(countries);
+          setCountryInfo(data);
         });
-    };
+    }, []);
 
-    getCountriesData();
-  }, []);
+  // get the covid19 data of each countries
+    useEffect(() => {
+      const getCountriesData = async () => {
+        await fetch("https://disease.sh/v3/covid-19/countries")
+          .then((response) => response.json())
+          .then((data) => {
+            const countries = data.map((country) => ({
+              name: country.country,
+              value: country.countryInfo.iso2,
+            }));
+            const sortedData = sortData(data);
+            setTableData(sortedData);
+            setMapCountries(data);
+            setCountries(countries);
+          });
+      };
+      getCountriesData();
+    }, []);
 
-
-
-
-  const onCountryChange = async (event) => {
-    setLoading(true);
-    const countryCode = event.target.value;
-
-    setCountry(countryCode);
-
-    const url =
-      countryCode === "worldwide"
-        ? "https://disease.sh/v3/covid-19/all"
-        : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
-
-    //https://disease.sh/v3/covid-19/all
-    //https://disease.sh/v3/covid-19/countries/[countryCode]
-
-    await fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setCountry(countryCode);
-        setCountryInfo(data);
-        setLoading(false);
-        // console.log([data.countryInfo.lat, data.countryInfo.long]);
+    // The function  where the event occurs when Country is selected at form.
+    const onCountryChange = async (event) => {
+      setLoading(true);
+      const countryCode = event.target.value;
+      setCountry(countryCode);
+      const url =
         countryCode === "worldwide"
-          ? setMapCenter([34.80746, -40.4796])
-          : setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
-        setZoom(5);
-      });
-
-    console.log(countryInfo);
-    
-  };
-
-
-
-
+          ? "https://disease.sh/v3/covid-19/all"
+          : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
+      await fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          setCountry(countryCode);
+          setCountryInfo(data);
+          setLoading(false);
+          countryCode === "worldwide"
+            ? setMapCenter([34.80746, -40.4796])
+            : setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+          setZoom(5);
+        }); 
+    };
 
   return (
     <div className="app">
@@ -124,12 +91,11 @@ function App() {
             >
               <MenuItem value="worldwide">Worldwide</MenuItem>
               {countries.map((country) => (
-                <MenuItem value={country.value}>{country.name}</MenuItem>
+              <MenuItem value={country.value}>{country.name}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </div>
-
         <div className="app__stats">
           <InfoBox
             isRed
@@ -161,7 +127,6 @@ function App() {
             isloading={isLoading}
           />
         </div>
-        {/* Map */}
         <Map
           countries={mapCountries}
           center={mapCenter}
@@ -170,20 +135,15 @@ function App() {
         />
       </div>
       <div className="app__right">
-        <Card >
+       <Card >
         <CardContent>
-      
           <h3>Live Cases by Country</h3>
           <Table countries={tableData} />
           <h3 className="app__graphTitle">WorldWide new {casesType}</h3>
           <LineGraph className="app__graph" casesType={casesType} />
-          
         </CardContent>
-        {/* Table */}
-        {/* Graph */}
-      </Card>
+       </Card>
       </div>
-      
     </div>
   );
 }
